@@ -2,14 +2,32 @@
 % Please edit documentation in R/pickem.R
 \name{get_results}
 \alias{get_results}
-\title{Title}
+\title{Find projected results of NFL Pick'Em pool}
 \usage{
 get_results(input_file, week, probs = get_538_data(),
-  pickem = read_pickem(input_file, week))
+  pickem = read_pickem(input_file, week, probs), losers = get_losers(probs,
+  week))
 }
 \arguments{
-\item{week}{}
+\item{input_file}{filename where the source xlsm is located}
+
+\item{week}{which week to return results for}
+
+\item{probs}{data.table containing game predictions.  By default, calls \link{get_538_data}}
+
+\item{pickem}{data.frame}
+
+\item{losers}{see \link{get_losers}}
+}
+\value{
+\code{data.table} with results
 }
 \description{
-Title
+Find projected results of NFL Pick'Em pool
+}
+\examples{
+## Not run:
+get_results("input/NFL Pool.xlsm", 11)
+
+## End(Not run)
 }

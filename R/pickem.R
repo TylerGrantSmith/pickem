@@ -155,19 +155,28 @@ get_losers <- function(probs, week) {
   losers <- losers[,.(WEEK, GAME_ID, TEAM, HOME_OR_AWAY)]
 }
 
-#' Title
+#' Find projected results of NFL Pick'Em pool
 #'
-#' @param pickem
-#' @param probs
-#' @param week
+#' @param input_file filename where the source xlsm is located
+#' @param pickem data.frame
+#' @param probs data.table containing game predictions.  By default, calls \link{get_538_data}
+#' @param week which week to return results for
+#' @param losers see \link{get_losers}
 #'
-#' @return
+#' @return `data.table` with results
 #' @export
 #'
 #' @examples
-get_results <- function(input_file, week, probs = get_538_data(), pickem = read_pickem(input_file,week, probs)) {
+#' ## Not run:
+#' get_results("input/NFL Pool.xlsm", 11)
+#'
+#' ## End(Not run)
+get_results <- function(input_file,
+                        week,
+                        probs = get_538_data(),
+                        pickem = read_pickem(input_file,week, probs),
+                        losers = get_losers(probs, week)) {
   outcomes <- generate_outcomes(probs, week)
-  losers <- get_losers(probs, week)
 
   out <- merge(
     calculate_points(pickem, outcomes) %>% calculate_ranks() %>% calculate_wins(),
