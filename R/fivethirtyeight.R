@@ -26,6 +26,8 @@ get_games <- function(x) {
 #' @return `data.table`
 #' @export
 get_538_data <- function() {
+  fivethirtyeight_nfl_url <- "https://projects.fivethirtyeight.com/2018-nfl-predictions/games/"
+
   nodes <-
     xml2::read_html(fivethirtyeight_nfl_url) %>%
     rvest::html_nodes(".week")

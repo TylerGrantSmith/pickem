@@ -60,7 +60,7 @@ generate_outcomes <- function(probs, week) {
                           by.x = c("WEEK","GAME_ID","OUTCOME"),
                           by.y = c("WEEK","GAME_ID","HOME_OR_AWAY"),
                           all.x = T)
-
+  setDT(scenario_probs)
   scenario_probs <- scenario_probs[,.(SCENARIO_PROB = prod(WIN_PROB)), by = .(WEEK, SIM_ID)]
 
   scenario_probs[outcomes, on = c("WEEK","SIM_ID")]

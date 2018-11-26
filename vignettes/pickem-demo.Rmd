@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 
 ```{r, results='asis'}
 library(pickem)
+library(data.table)
 input_file <- "input/NFL Pool.xlsm"
 results <- get_results(input_file, 11)
 knitr::kable(results)
