@@ -32,7 +32,7 @@ get_538_data <- function() {
     xml2::read_html(fivethirtyeight_nfl_url) %>%
     rvest::html_nodes(".week")
 
-  tibble(WEEK =
+  tibble::tibble(WEEK =
            nodes %>%
            purrr::map_int(~rvest::html_nodes(.,".h3") %>%
                             rvest::html_text() %>%
