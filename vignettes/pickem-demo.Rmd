@@ -21,8 +21,51 @@ knitr::opts_chunk$set(
 ```{r, results='asis'}
 library(pickem)
 library(data.table)
-input_file <- "input/NFL Pool.xlsm"
-results <- get_results(input_file, 11)
+input_file <- here::here("input","NFL Pool.xlsm")
+results <- get_results(input_file, 17)
 knitr::kable(results)
 ```
 
+
+```{r}
+library(tidyverse)
+library(data.table)
+library(pickem)
+input_file = here::here("input","NFL Pool.xlsm")
+week = 17
+probs = pickem::get_538_data()
+pickem = pickem::read_pickem(input_file, week, probs)
+outcomes = pickem:::generate_outcomes(probs, week)
+points = pickem:::calculate_points(pickem, outcomes)
+ranks = pickem:::calculate_ranks(points)
+
+setDT(probs)
+setDT(pickem)
+setDT(outcomes)
+setDT(points)
+setDT(ranks)
+name = "Jordan"
+num_win_scenarios = ranks[RANK==1][NAME==name][,.N]
+
+probs[outcomes[ranks[RANK==1][NAME==name], on = c("SIM_ID", "WEEK", "SCENARIO_PROB")], on = c("WEEK", "GAME_ID", "HOME_OR_AWAY" = "OUTCOME")][,.(.N,WIN_SCENARIO_PERCENT = scales::percent(.N/num_win_scenarios, 0.01)),TEAM][order(-N)]
+
+probs[outcomes[ranks[RANK==1], on = c("SIM_ID", "WEEK", "SCENARIO_PROB")], on = c("WEEK", "GAME_ID", "HOME_OR_AWAY" = "OUTCOME")][,.(.N,WIN_SCENARIO_PERCENT = scales::percent(.N/num_win_scenarios, 0.01)),TEAM][order(-N)]
+
+x <-
+  probs[outcomes[ranks[RANK==1], on = c("SIM_ID", "WEEK", "SCENARIO_PROB"), allow.cartesian = TRUE], on = c("WEEK", "GAME_ID", "HOME_OR_AWAY" = "OUTCOME")][,.(.N,WIN_SCENARIO_PERCENT = scales::percent(.N/num_win_scenarios, 0.01)),c('TEAM','NAME')] %>% dcast(TEAM ~ NAME, value.var = 'N')
+
+y <-
+  ranks[!is.na(NAME)][RANK == 1][,TIE_VALUE := 1/.N, SIM_ID] %>% 
+  dcast(WEEK ~ NAME, value.var = 'RANK', fun.aggregate = sum)
+
+y <- y[,-1]
+x[,-1] / (replicate(32,y,simplify = T) %>% t %>% as.data.table() %>% mutate_all(as.double) %>% as.data.table())
+
+bind_cols(x[,1],x[,-1] / (replicate(32,y,simplify = T) %>% t %>% as.data.table() %>% mutate_all(as.double) %>% as.data.table())) %>% mutate_all(replace_na, 0) %>% mutate_at(vars(-1), scales::percent,accuracy = 0.1)
+
+
+out <-
+  ranks[!is.na(NAME)][RANK == 1][,TIE_VALUE := 1/.N, SIM_ID][, VALUE:=1][,SCENARIO_PROB_TIE := SCENARIO_PROB * TIE_VALUE] %>% melt(measure.vars = c('VALUE','TIE_VALUE', 'SCENARIO_PROB', 'SCENARIO_PROB_TIE'), id.vars = c('NAME')) %>% dcast(variable ~ NAME, fun = sum)
+
+out[,map(.SD, round, digits = 3), .SDcols = names(out)[-1]]
+```

@@ -76,7 +76,7 @@ generate_outcomes <- function(probs, week) {
 #' @export
 calculate_points <- function(pickem, outcomes, losers = NULL) {
   results <- merge(pickem,
-                   outcomes,
+                   outcomes[SIM_ID==1],
                    by.x = c("WEEK", "GAME_ID", "HOME_OR_AWAY"),
                    by.y = c("WEEK", "GAME_ID", "OUTCOME"),
                    all.y = T,
@@ -90,11 +90,12 @@ calculate_points <- function(pickem, outcomes, losers = NULL) {
 
   #losers <- losers[ , if(.N == 1) .SD, by = GAME_ID]
 
-  if(!is.null(losers))
+  if(!is.null(losers)) {
     invalid_sims <- merge(losers,
                           outcomes,
                           by.x = c("WEEK", "GAME_ID", "HOME_OR_AWAY"),
                           by.y = c("WEEK", "GAME_ID", "OUTCOME"))[,SIM_ID] %>% unique()
+  }
 
   results <- results[!(SIM_ID %in% invalid_sims)]
   summarised_results <- results[,.(SCENARIO_POINTS = sum(POINTS)),by = .(WEEK, SIM_ID, NAME, SCENARIO_PROB)]
@@ -176,7 +177,7 @@ get_results <- function(input_file,
                         probs = get_538_data(),
                         pickem = read_pickem(input_file,week, probs),
                         losers = get_losers(probs, week)) {
-  outcomes <- generate_outcomes(probs, week)
+  outcomes <- pickem:::generate_outcomes(probs, week)
 
   out <- merge(
     calculate_points(pickem, outcomes) %>% calculate_ranks() %>% calculate_wins(),
