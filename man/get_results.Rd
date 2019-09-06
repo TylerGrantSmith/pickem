@@ -5,8 +5,8 @@
 \title{Find projected results of NFL Pick'Em pool}
 \usage{
 get_results(input_file, week, probs = get_538_data(),
-  pickem = read_pickem(input_file, week, probs), losers = get_losers(probs,
-  week))
+  pickem = read_pickem(input_file, week, probs),
+  losers = get_losers(probs, week))
 }
 \arguments{
 \item{input_file}{filename where the source xlsm is located}

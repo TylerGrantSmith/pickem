@@ -76,13 +76,14 @@ generate_outcomes <- function(probs, week) {
 #' @export
 calculate_points <- function(pickem, outcomes, losers = NULL) {
   results <- merge(pickem,
-                   outcomes[SIM_ID==1],
+  outcomes,#                 outcomes[SIM_ID==1],
                    by.x = c("WEEK", "GAME_ID", "HOME_OR_AWAY"),
                    by.y = c("WEEK", "GAME_ID", "OUTCOME"),
                    all.y = T,
                    allow.cartesian = T)
 
-  #invalid_sims <- losers[outcomes, on = .(WEEK,GAME_ID, HOME_OR_AWAY = OUTCOME)][,SIM_ID] %>% unique
+  # if(!is.null(losers))
+  #   invalid_sims <- losers[outcomes, on = .(WEEK,GAME_ID, HOME_OR_AWAY = OUTCOME)][,SIM_ID] %>% unique
   invalid_sims <- NULL
 
   # ties <- losers[ , if(.N > 1) .SD, by = GAME_ID]
@@ -188,7 +189,7 @@ get_results <- function(input_file,
     suffixes = c("_BEG","_END")
   )
 
-  out[order(-MEAN_POINTS_END)][!is.na(NAME)]
+  out[order(-MEAN_POINTS_END)][!is.na(NAME)][order(-WIN_PERCENT_END)]
 }
 
 # season_results <- map_df(1:11, ~get_results(pickem, probs_538, .))[!is.na(NAME)][!is.na(WIN_PERCENT_END)]

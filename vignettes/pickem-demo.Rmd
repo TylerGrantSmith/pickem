@@ -21,8 +21,8 @@ knitr::opts_chunk$set(
 ```{r, results='asis'}
 library(pickem)
 library(data.table)
-input_file <- here::here("input","NFL Pool.xlsm")
-results <- get_results(input_file, 17)
+input_file <- here::here("input","NFL Pool.xlsx")
+results <- get_results(input_file, 1)
 knitr::kable(results)
 ```
 
@@ -31,8 +31,8 @@ knitr::kable(results)
 library(tidyverse)
 library(data.table)
 library(pickem)
-input_file = here::here("input","NFL Pool.xlsm")
-week = 17
+input_file = here::here("input","NFL Pool.xlsx")
+week = 1
 probs = pickem::get_538_data()
 pickem = pickem::read_pickem(input_file, week, probs)
 outcomes = pickem:::generate_outcomes(probs, week)
