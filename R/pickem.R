@@ -9,9 +9,6 @@
 
 read_pickem <- function(filename, week, probs) {
   sheet <- paste("Pick'Em Week", week)
-  filename
-  week
-  probs
 
   ws <-
     openxlsx::read.xlsx(filename, sheet = sheet, rows = 2:22) %>%
@@ -32,6 +29,8 @@ read_pickem <- function(filename, week, probs) {
                by.x = c("WEEK","GAME_ID","PICK"),
                by.y = c("WEEK","GAME_ID","TEAM")) %>%
     data.table::as.data.table()
+
+  out
 }
 
 #' Generate all possible outcomes for a given week and assign scenario
@@ -100,6 +99,8 @@ calculate_points <- function(pickem, outcomes, losers = NULL) {
 
   results <- results[!(SIM_ID %in% invalid_sims)]
   summarised_results <- results[,.(SCENARIO_POINTS = sum(POINTS)),by = .(WEEK, SIM_ID, NAME, SCENARIO_PROB)]
+
+  summarised_results
 }
 
 #' Calculate ranks
@@ -173,12 +174,13 @@ get_losers <- function(probs, week) {
 #' get_results("input/NFL Pool.xlsm", 11)
 #'
 #' ## End(Not run)
+
 get_results <- function(input_file,
-                        week,
+                        week_number,
                         probs = get_538_data(),
                         pickem = read_pickem(input_file,week, probs),
                         losers = get_losers(probs, week)) {
-  outcomes <- pickem:::generate_outcomes(probs, week)
+  outcomes <- pickem:::generate_outcomes(probs, week_number)
 
   out <- merge(
     calculate_points(pickem, outcomes) %>% calculate_ranks() %>% calculate_wins(),

@@ -49,7 +49,7 @@ num_win_scenarios = ranks[RANK==1][NAME==name][,.N]
 
 probs[outcomes[ranks[RANK==1][NAME==name], on = c("SIM_ID", "WEEK", "SCENARIO_PROB")], on = c("WEEK", "GAME_ID", "HOME_OR_AWAY" = "OUTCOME")][,.(.N,WIN_SCENARIO_PERCENT = scales::percent(.N/num_win_scenarios, 0.01)),TEAM][order(-N)]
 
-probs[outcomes[ranks[RANK==1], on = c("SIM_ID", "WEEK", "SCENARIO_PROB")], on = c("WEEK", "GAME_ID", "HOME_OR_AWAY" = "OUTCOME")][,.(.N,WIN_SCENARIO_PERCENT = scales::percent(.N/num_win_scenarios, 0.01)),TEAM][order(-N)]
+probs[outcomes[ranks[RANK==1], on = c("SIM_ID", "WEEK", "SCENARIO_PROB"),allow.cartesian = TRUE], on = c("WEEK", "GAME_ID", "HOME_OR_AWAY" = "OUTCOME")][,.(.N,WIN_SCENARIO_PERCENT = scales::percent(.N/num_win_scenarios, 0.01)),TEAM][order(-N)]
 
 x <-
   probs[outcomes[ranks[RANK==1], on = c("SIM_ID", "WEEK", "SCENARIO_PROB"), allow.cartesian = TRUE], on = c("WEEK", "GAME_ID", "HOME_OR_AWAY" = "OUTCOME")][,.(.N,WIN_SCENARIO_PERCENT = scales::percent(.N/num_win_scenarios, 0.01)),c('TEAM','NAME')] %>% dcast(TEAM ~ NAME, value.var = 'N')

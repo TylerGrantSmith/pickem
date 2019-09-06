@@ -1,3 +1,5 @@
+fivethirtyeight_nfl_url <- "https://projects.fivethirtyeight.com/2019-nfl-predictions/games/"
+
 get_games <- function(x) {
   dplyr::tibble(DATE =
                   x %>%
@@ -18,31 +20,29 @@ get_games <- function(x) {
                                                              stringr::str_replace("%", "") %>%
                                                              as.numeric() / 100,
                                                            HOME_OR_AWAY = c("AWAY","HOME")))) %>%
-    mutate(GAME_ID = row_number())
+    dplyr::mutate(GAME_ID = row_number()) %>%
+    tidyr::unnest(GAMES)
 }
+
 
 #' Extract 538 NFL Prediction Data
 #'
 #' @return `data.table`
 #' @export
 get_538_data <- function() {
-  fivethirtyeight_nfl_url <- "https://projects.fivethirtyeight.com/2019-nfl-predictions/games/"
+  nodes <- xml2::read_html(fivethirtyeight_nfl_url) %>% rvest::html_nodes(".week")
 
-  nodes <-
-    xml2::read_html(fivethirtyeight_nfl_url) %>%
-    rvest::html_nodes(".week")
-
-  tibble::tibble(WEEK =
-                   nodes %>%
-                   purrr::map_int(~rvest::html_nodes(.,".h3") %>%
-                                    rvest::html_text() %>%
-                                    stringr::str_replace("Week ", "") %>%
-                                    as.integer()),
-                 GAMES =
-                   nodes %>%
-                   purrr::map(~rvest::html_nodes(.,".day")) %>%
-                   purrr::map(get_games)) %>%
-    tidyr::unnest(GAMES) %>%
+  tibble::tibble(
+    WEEK =
+      nodes %>%
+      purrr::map_int(~rvest::html_nodes(.,".h3") %>%
+                       rvest::html_text() %>%
+                       stringr::str_replace("Week ", "") %>%
+                       as.integer()),
+    GAMES =
+      nodes %>%
+      purrr::map(~rvest::html_nodes(.,".day")) %>%
+      purrr::map(get_games)) %>%
     tidyr::unnest(GAMES) %>%
     dplyr::mutate(TEAM = TEAM %>% stringr::str_replace_all("\\.","")) %>%
     dplyr::arrange(WEEK, desc(HOME_OR_AWAY), TEAM) %>%
@@ -57,6 +57,6 @@ get_538_data <- function() {
     dplyr::ungroup() %>%
     dplyr::mutate(GAME_ID = NEW_GAME_ID) %>%
     dplyr::select(-NEW_GAME_ID) %>%
-    data.table::setDT()
+    data.table::as.data.table()
 }
 
