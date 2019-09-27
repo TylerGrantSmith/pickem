@@ -75,22 +75,20 @@ generate_outcomes <- function(probs, week) {
 #' @export
 calculate_points <- function(pickem, outcomes, losers = NULL) {
   results <- merge(pickem,
-  outcomes,#                 outcomes[SIM_ID==1],
+                   outcomes,#                 outcomes[SIM_ID==1],
                    by.x = c("WEEK", "GAME_ID", "HOME_OR_AWAY"),
                    by.y = c("WEEK", "GAME_ID", "OUTCOME"),
                    all.y = T,
                    allow.cartesian = T)
 
-  # if(!is.null(losers))
-  #   invalid_sims <- losers[outcomes, on = .(WEEK,GAME_ID, HOME_OR_AWAY = OUTCOME)][,SIM_ID] %>% unique
   invalid_sims <- NULL
-
-  # ties <- losers[ , if(.N > 1) .SD, by = GAME_ID]
-  # outcomes[GAME_ID %in% ties$GAME_ID, SCENARIO_PROB == 0]
-
-  #losers <- losers[ , if(.N == 1) .SD, by = GAME_ID]
-
   if(!is.null(losers)) {
+    ties <- losers[ , if(.N > 1) .SD, by = GAME_ID]
+    outcomes[GAME_ID %in% ties$GAME_ID, SCENARIO_PROB := 0]
+
+    losers <- losers[ , if(.N == 1) .SD, by = GAME_ID]
+
+
     invalid_sims <- merge(losers,
                           outcomes,
                           by.x = c("WEEK", "GAME_ID", "HOME_OR_AWAY"),
@@ -177,9 +175,22 @@ get_losers <- function(probs, week) {
 
 get_results <- function(input_file,
                         week_number,
-                        probs = get_538_data(),
-                        pickem = read_pickem(input_file,week, probs),
-                        losers = get_losers(probs, week)) {
+                        probs =  NULL,
+                        pickem = NULL,
+                        losers = NULL) {
+
+  if(is.null(probs)) {
+    probs <- get_538_data()
+  }
+
+  if(is.null(pickem)) {
+    pickem <- read_pickem(input_file, week_number, probs)
+  }
+
+  if(is.null(losers)) {
+    losers <- get_losers(probs, week_number)
+  }
+
   outcomes <- pickem:::generate_outcomes(probs, week_number)
 
   out <- merge(
